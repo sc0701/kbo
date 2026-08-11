@@ -23,29 +23,38 @@
 */
 
 function computeCloseness(homeInnings, awayInnings) {
-  const totalInnings = awayInnings.length; // 원정팀 기준 = 실제 경기 이닝 수
-  const commonInnings = Math.min(homeInnings.length, awayInnings.length);
+  const totalInnings = awayInnings.length; // 화면(테이블) 렌더링을 위해 기존 값 유지
+  const totalHalfInnings = awayInnings.length + homeInnings.length; // 예: 9 + 8 = 17 (8.5이닝)
 
   let cumHome = 0;
   let cumAway = 0;
+  let closeHalfInnings = 0; // 1점 차 이내였던 반 이닝(초/말) 누적 횟수
   let lastCloseInning = 0;
 
-  for (let i = 0; i < commonInnings; i++) {
-    cumHome += homeInnings[i];
+  for (let i = 0; i < awayInnings.length; i++) {
+    // 초 (원정팀 공격 후 점수 확인)
     cumAway += awayInnings[i];
-    const diff = Math.abs(cumHome - cumAway);
-    if (diff <= 1) lastCloseInning = i + 1;
+    if (Math.abs(cumHome - cumAway) <= 1) {
+      closeHalfInnings++;
+      lastCloseInning = i + 1;
+    }
+
+    // 말 (홈팀 공격 후 점수 확인)
+    if (i < homeInnings.length) {
+      cumHome += homeInnings[i];
+      if (Math.abs(cumHome - cumAway) <= 1) {
+        closeHalfInnings++;
+        lastCloseInning = i + 1;
+      }
+    }
   }
 
-  const ratio = totalInnings > 0 ? lastCloseInning / totalInnings : 0;
+  // 4.0이닝 / 8.5이닝 == 8번 / 17번 (결과 비율은 동일하게 계산됨)
+  const ratio = totalHalfInnings > 0 ? closeHalfInnings / totalHalfInnings : 0;
   return { lastCloseInning, totalInnings, ratio };
 }
 
 function computeIsWalkoff(homeScore, awayScore, homeInnings, awayInnings) {
-  // 홈팀이 마지막 이닝(말)까지 타석에 섰고(=배열 길이가 원정과 같음),
-  // 그 결과 최종적으로 홈팀이 이겼다면 끝내기 승부(walk-off)다.
-  // (홈팀이 9회초 종료 시점에 이미 앞서고 있었다면 9회말을 치르지 않으므로
-  //  homeInnings.length < awayInnings.length 가 되어 자동으로 걸러진다.)
   if (homeInnings.length !== awayInnings.length) return false;
   return homeScore > awayScore;
 }

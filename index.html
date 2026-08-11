@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KBO 승부 분석기</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚾ KBO 승부 분석기</h1>
+            <p id="header-desc">KBO 팀들의 1무(1점차 이내) 승부 랭킹을 확인하세요.</p>
+        </header>
+
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-view="leaderboardView">🏆 순위표</button>
+            <button class="tab-btn" data-view="detailView">🆚 상대 전적</button>
+            <button class="tab-btn" data-view="closenessView">📉 접전 유지력</button>
+            <button class="tab-btn" data-view="starterView">🧢 선발투수</button>
+            <button class="tab-btn" data-view="trendView">📅 월별 트렌드</button>
+            <button class="tab-btn" data-view="extraView">🔍 추가 분석</button>
+        </nav>
+
+        <!-- View 1: Leaderboard -->
+        <div id="leaderboardView" class="view-section fade-in">
+            <div class="leaderboard-header">
+                <h2>🏆 1무 승부(1점차 이내) 최다 팀 순위</h2>
+            </div>
+
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>순위</th>
+                        <th>팀명</th>
+                        <th>총 경기</th>
+                        <th>1무 경기</th>
+                        <th>확률(%)</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardBody"></tbody>
+            </table>
+        </div>
+
+        <!-- View 2: Match Detail -->
+        <div id="detailView" class="view-section" style="display: none;">
+            <div class="controls-card">
+                <section class="match-select">
+                    <div class="select-group">
+                        <label for="teamA">기준 팀</label>
+                        <select id="teamA"></select>
+                    </div>
+                    <div class="vs-badge">VS</div>
+                    <div class="select-group">
+                        <label for="teamB">상대 팀</label>
+                        <select id="teamB"></select>
+                    </div>
+                </section>
+                <div class="btn-group">
+                    <button class="action-btn" onclick="analyzeMatch()">전적 분석하기</button>
+                </div>
+            </div>
+            <div id="matchResult" class="result-container" style="display: none;"></div>
+        </div>
+
+        <!-- View 3: Close-Game Persistence (1무 유지력) -->
+        <div id="closenessView" class="view-section" style="display: none;">
+            <div class="section-intro">
+                <h2>📉 1무 유지력 랭킹</h2>
+                <p>이닝별 누적 점수차를 추적해, 경기가 몇 회까지 1점차 이내 접전을 유지했는지를 팀별로 집계했습니다.
+                   비율이 높을수록 접전 상태를 오래 끌고 가는 팀이라는 뜻입니다. (막판 붕괴형: 유지력은 높지만 결국 1무는 못한 경기)</p>
+            </div>
+
+            <table class="leaderboard-table closeness-table">
+                <thead>
+                    <tr>
+                        <th>순위</th>
+                        <th>팀명</th>
+                        <th>경기</th>
+                        <th>평균 유지력</th>
+                        <th>1무 성공</th>
+                        <th>막판 붕괴</th>
+                        <th>조기 붕괴</th>
+                    </tr>
+                </thead>
+                <tbody id="closenessBody"></tbody>
+            </table>
+
+            <div class="controls-card">
+                <div class="select-group full-width">
+                    <label for="closenessTeamSelect">팀별 경기 상세 보기</label>
+                    <select id="closenessTeamSelect"></select>
+                </div>
+            </div>
+            <div id="closenessDetail" class="result-container"></div>
+        </div>
+
+        <!-- View 4: Starter Pitcher Analysis -->
+        <div id="starterView" class="view-section" style="display: none;">
+            <div class="section-intro">
+                <h2>🧢 선발투수 등판 분석</h2>
+                <p>특정 선발투수가 등판했을 때, 그 팀의 경기 결과가 대승/접전(1무)/대패 중 어디로 쏠리는지 확인합니다.</p>
+            </div>
+
+            <div class="controls-card">
+                <section class="match-select">
+                    <div class="select-group">
+                        <label for="starterTeamSelect">팀 선택</label>
+                        <select id="starterTeamSelect"></select>
+                    </div>
+                    <div class="select-group">
+                        <label for="starterPitcherSelect">선발투수 선택</label>
+                        <select id="starterPitcherSelect"></select>
+                    </div>
+                </section>
+            </div>
+            <div id="starterResult" class="result-container"></div>
+        </div>
+
+        <!-- View 5: Extra Analyses -->
+        <div id="extraView" class="view-section" style="display: none;">
+            <div class="section-intro">
+                <h2>🔍 추가 분석</h2>
+                <p>접전이 깨지는 시점과 끝내기 승부를 살펴봅니다.</p>
+            </div>
+
+            <div class="extra-block">
+                <div class="extra-block-header">
+                    <h3>① 승부처 이닝 — 접전이 깨지는 시점</h3>
+                    <select id="decisiveTeamSelect"></select>
+                </div>
+                <p class="extra-desc">최종적으로 1무가 되지 못한 경기들이 <b>마지막으로 1점차 이내였던 이닝</b>의 분포입니다. 0회는 초반부터 벌어진 경기, 숫자가 클수록 막판까지 접전이었다는 뜻입니다.</p>
+                <div id="decisiveChart" class="bar-chart"></div>
+            </div>
+
+            <div class="extra-block">
+                <div class="extra-block-header">
+                    <h3>② 끝내기(walk-off) 승부 기록</h3>
+                    <select id="walkoffTeamSelect"></select>
+                </div>
+                <div id="walkoffRanking" class="mini-ranking"></div>
+                <div id="walkoffList" class="history-list"></div>
+            </div>
+        </div>
+
+        <!-- View 6: Monthly Trend -->
+        <div id="trendView" class="view-section" style="display: none;">
+            <div class="section-intro">
+                <h2>📅 월별 1무 트렌드</h2>
+                <p>리그 전체 흐름부터 팀별 월간 추이, 최근 경기 흐름까지 한눈에 확인합니다.</p>
+            </div>
+
+            <div class="extra-block">
+                <div class="extra-block-header"><h3>① 리그 전체 월별 접전(1무) 비율</h3></div>
+                <div id="monthlyTrend" class="monthly-trend"></div>
+            </div>
+
+            <div class="extra-block">
+                <div class="extra-block-header"><h3>② 팀별 × 월별 1무 비율 히트맵</h3></div>
+                <p class="extra-desc">진한 초록일수록 그 달에 1무(1점차 이내 승부)가 많았던 팀입니다. 팀은 전체 시즌 1무 비율이 높은 순으로 정렬했어요.</p>
+                <div id="teamMonthlyHeatmap" class="heatmap-wrap"></div>
+            </div>
+
+            <div class="extra-block">
+                <div class="extra-block-header"><h3>③ 최근 흐름 — 최근 10경기 접전 비율</h3></div>
+                <p class="extra-desc">최근 10경기 1무 비율과 시즌 평균을 비교해, 요즘 접전 양상이 늘고 있는 팀/줄고 있는 팀을 보여줍니다.</p>
+                <div id="recentForm" class="recent-form-list"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 경기 상세 모달 -->
+    <div id="gameModalOverlay" class="modal-overlay" onclick="if(event.target===this) hideGameModal()">
+        <div class="modal-card">
+            <button class="modal-close" onclick="hideGameModal()" aria-label="닫기">✕</button>
+            <div id="gameModalContent"></div>
+        </div>
+    </div>
+
+    <!-- ================================================================
+         데이터 로딩: 아래 목록에 새 월 파일을 한 줄씩 추가하면 됩니다.
+         반드시 data-store.js 다음, normalize.js 이전에 위치해야 합니다.
+         ================================================================ -->
+    <script src="js/data-store.js"></script>
+    <script src="data/2026-03_04.js"></script>
+    <script src="data/2026-05.js"></script>
+    <script src="data/2026-06.js"></script>
+    <script src="data/2026-07.js"></script>
+    <script src="data/2026-08.js"></script>
+
+    <script src="js/normalize.js"></script>
+    <script src="js/analysis.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

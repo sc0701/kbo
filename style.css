@@ -217,16 +217,18 @@ header p {
 /* Match Select */
 .match-select {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
     gap: 1.5rem;
-    flex-wrap: wrap;
 }
 
 .select-group {
+    flex: 1;
+    max-width: 220px;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    min-width: 0;
 }
 
 .select-group label {
@@ -236,6 +238,7 @@ header p {
 }
 
 select {
+    width: 100%;
     padding: 0.7rem 1.4rem;
     font-size: 1.05rem;
     font-family: inherit;
@@ -248,9 +251,11 @@ select {
     cursor: pointer;
     transition: all 0.2s ease;
     appearance: none;
-    min-width: 120px;
+    min-width: 0;
     text-align: center;
 }
+
+select:disabled { opacity: 0.5; cursor: not-allowed; }
 
 select:focus, select:hover {
     border-color: var(--primary);
@@ -258,10 +263,11 @@ select:focus, select:hover {
 }
 
 .vs-badge {
+    flex: 0 0 auto;
     font-weight: 800;
     font-size: 1.1rem;
     color: var(--text-muted);
-    margin-top: 1.5rem;
+    padding-bottom: 0.7rem;
 }
 
 .action-btn {
@@ -757,6 +763,150 @@ select:focus, select:hover {
     line-height: 1.5;
 }
 
+/* ================= 오늘의 승부 예측 ================= */
+.predict-games {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.predict-game-card {
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.1rem 1.25rem;
+}
+
+.predict-game-num {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.6rem;
+}
+
+.predict-matchup-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.predict-side {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.predict-side select { width: 100%; min-width: 0; padding: 0.6rem 0.75rem; font-size: 0.92rem; }
+.predict-side .predict-starter { font-size: 0.85rem; }
+
+.predict-rookie-name {
+    display: none;
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.85rem;
+    font-family: inherit;
+    background: var(--surface);
+    color: var(--text-main);
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    outline: none;
+    min-width: 0;
+}
+.predict-rookie-name:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+
+.predict-matchup-grid .vs-badge { padding-bottom: 0; }
+
+.predict-results {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.predict-result-card {
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.4rem 1.5rem;
+}
+
+.predict-result-header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.1rem;
+    padding-bottom: 1.1rem;
+    border-bottom: 1px solid var(--border);
+}
+.predict-result-team {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    text-align: center;
+    min-width: 0;
+}
+.predict-result-pitcher {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+.predict-result-header .vs-badge { padding-bottom: 0; }
+
+.predict-outcomes {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+.predict-outcome-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.predict-outcome-label {
+    width: 190px;
+    flex-shrink: 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+.predict-outcome-top .predict-outcome-label { color: var(--text-main); font-weight: 800; }
+.predict-outcome-top .bar-fill { background: var(--draw-color); }
+.predict-outcome-pct {
+    width: 64px;
+    flex-shrink: 0;
+    text-align: right;
+    font-family: 'DM Mono', monospace;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text-main);
+}
+
+.predict-source-details {
+    margin-top: 1rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+.predict-source-details summary {
+    cursor: pointer;
+    font-weight: 700;
+    color: var(--primary);
+}
+.predict-source-list {
+    margin: 0.6rem 0 0;
+    padding-left: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+.predict-source-label { color: var(--text-main); font-weight: 600; }
+.predict-source-note { display: block; color: var(--text-muted); }
+
 .fade-in { animation: fadeIn 0.5s ease-out forwards; }
 
 @keyframes fadeIn {
@@ -803,4 +953,28 @@ select:focus, select:hover {
     .modal-story { margin: 1.25rem 1rem 0; }
     .recent-form-stats { width: 100%; }
     .recent-form-row { flex-wrap: wrap; }
+
+    /* 4. 팀 선택(상대전적/선발투수) 한 줄 유지 + 선택폭 축소 */
+    .match-select { gap: 0.6rem; }
+    .select-group { max-width: none; }
+    .select-group label { font-size: 0.72rem; }
+    select { padding: 0.6rem 0.5rem; font-size: 0.85rem; }
+    .vs-badge { font-size: 0.9rem; padding-bottom: 0.55rem; }
+
+    /* 5. 오늘의 예측 카드 모바일 대응 */
+    .predict-matchup-grid { gap: 0.5rem; }
+    .predict-side select { padding: 0.55rem 0.4rem; font-size: 0.8rem; }
+    .predict-game-card { padding: 0.9rem 0.85rem; }
+    .predict-result-card { padding: 1.1rem 1rem; }
+    .predict-outcome-label { width: 130px; font-size: 0.78rem; }
+    .predict-outcome-pct { width: 52px; font-size: 0.82rem; }
+    .predict-result-pitcher { font-size: 0.72rem; }
+}
+
+@media (max-width: 420px) {
+    /* 아주 좁은 화면에서는 원정/홈 선택 블록을 위아래로 쌓아 가독성 확보 */
+    .predict-matchup-grid { grid-template-columns: 1fr; }
+    .predict-matchup-grid .vs-badge { padding: 0.15rem 0; }
+    .predict-result-header { grid-template-columns: 1fr; text-align: center; }
+    .predict-result-header .vs-badge { padding: 0.2rem 0; }
 }

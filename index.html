@@ -10,11 +10,12 @@
     <div class="container">
         <header>
             <h1>⚾ KBO 승부 분석기</h1>
-            <p id="header-desc">KBO 팀들의 1무(1점차 이내) 승부 랭킹을 확인하세요.</p>
+            <p id="header-desc">오늘의 팀 · 선발투수 매치업을 넣으면 확률 높은 결과부터 보여드려요.</p>
         </header>
 
         <nav class="tab-nav">
-            <button class="tab-btn active" data-view="leaderboardView">🏆 순위표</button>
+            <button class="tab-btn active" data-view="predictView">🔮 오늘의 예측</button>
+            <button class="tab-btn" data-view="leaderboardView">🏆 순위표</button>
             <button class="tab-btn" data-view="detailView">🆚 상대 전적</button>
             <button class="tab-btn" data-view="closenessView">📉 접전 유지력</button>
             <button class="tab-btn" data-view="starterView">🧢 선발투수</button>
@@ -22,8 +23,26 @@
             <button class="tab-btn" data-view="extraView">🔍 추가 분석</button>
         </nav>
 
+        <!-- View 0: Today's Prediction -->
+        <div id="predictView" class="view-section fade-in">
+            <div class="section-intro">
+                <h2>🔮 오늘의 승부 예측</h2>
+                <p>오늘 열리는 경기의 팀과 선발투수를 골라주세요. 팀 상대전적 · 선발투수 등판 기록 · 리그 평균을 종합해
+                   결과별 확률을 추정해서, 가능성이 높은 경우의 수부터 보여드립니다. 선발투수 기록이 없는 신인 등판도
+                   선택할 수 있어요. (참고용 통계이며 실제 결과를 보장하지 않습니다)</p>
+            </div>
+
+            <div id="predictGames" class="predict-games"></div>
+
+            <div class="btn-group">
+                <button class="action-btn" onclick="analyzeTodayGames()">오늘 경기 분석하기</button>
+            </div>
+
+            <div id="predictResults" class="predict-results"></div>
+        </div>
+
         <!-- View 1: Leaderboard -->
-        <div id="leaderboardView" class="view-section fade-in">
+        <div id="leaderboardView" class="view-section" style="display: none;">
             <div class="leaderboard-header">
                 <h2>🏆 1무 승부(1점차 이내) 최다 팀 순위</h2>
             </div>

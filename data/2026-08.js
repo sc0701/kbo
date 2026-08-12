@@ -259,4 +259,134 @@ KBO_RAW.push(
   },
   "winningHit": "정준재(7회 2사 3루서 좌전 안타)"
 },
+  {
+  "date": "2026-08-11",
+  "stadium": "잠실",
+  "awayTeam": {
+    "name": "한화",
+    "score": 3
+  },
+  "homeTeam": {
+    "name": "두산",
+    "score": 6
+  },
+  "pitchers": {
+    "win": "김택연",
+    "lose": "장유호",
+    "save": "이영하",
+    "starter": {
+      "away": "왕옌청",
+      "home": "곽빈"
+    }
+  },
+  "scoreboard": {
+    "away": [0, 0, 0, 0, 0, 0, 3, 0, 0],
+    "home": [1, 1, 0, 0, 0, 1, 3, 0]
+  },
+  "winningHit": "박준순(7회 1사 1,3루서 좌월 홈런)"
+},
+{
+  "date": "2026-08-11",
+  "stadium": "문학",
+  "awayTeam": {
+    "name": "롯데",
+    "score": 4
+  },
+  "homeTeam": {
+    "name": "SSG",
+    "score": 8
+  },
+  "pitchers": {
+    "win": "아빌라",
+    "lose": "비슬리",
+    "save": null,
+    "starter": {
+      "away": "비슬리",
+      "home": "아빌라"
+    }
+  },
+  "scoreboard": {
+    "away": [0, 0, 0, 0, 0, 3, 0, 1, 0],
+    "home": [3, 4, 0, 0, 0, 1, 0, 0]
+  },
+  "winningHit": "김재환(1회 무사 1,2루서 우월 홈런)"
+},
+{
+  "date": "2026-08-11",
+  "stadium": "광주",
+  "awayTeam": {
+    "name": "삼성",
+    "score": 1
+  },
+  "homeTeam": {
+    "name": "KIA",
+    "score": 3
+  },
+  "pitchers": {
+    "win": "올러",
+    "lose": "페덱",
+    "save": "이의리",
+    "starter": {
+      "away": "페덱",
+      "home": "올러"
+    }
+  },
+  "scoreboard": {
+    "away": [0, 0, 0, 0, 1, 0, 0, 0, 0],
+    "home": [0, 2, 0, 1, 0, 0, 0, 0]
+  },
+  "winningHit": "김태군(2회 2사 2,3루서 좌익수 2루타)"
+},
+{
+  "date": "2026-08-11",
+  "stadium": "창원",
+  "awayTeam": {
+    "name": "KT",
+    "score": 7
+  },
+  "homeTeam": {
+    "name": "NC",
+    "score": 3
+  },
+  "pitchers": {
+    "win": "우규민",
+    "lose": "임지민",
+    "save": null,
+    "starter": {
+      "away": "로건",
+      "home": "라일리"
+    }
+  },
+  "scoreboard": {
+    "away": [0, 0, 0, 1, 0, 0, 0, 0, 6],
+    "home": [3, 0, 0, 0, 0, 0, 0, 0, 0]
+  },
+  "winningHit": "최원준(9회 2사 만루서 우전 안타)"
+},
+{
+  "date": "2026-08-11",
+  "stadium": "고척",
+  "awayTeam": {
+    "name": "LG",
+    "score": 8
+  },
+  "homeTeam": {
+    "name": "키움",
+    "score": 3
+  },
+  "pitchers": {
+    "win": "카라스코",
+    "lose": "정현우",
+    "save": "손주영",
+    "starter": {
+      "away": "카라스코",
+      "home": "안우진"
+    }
+  },
+  "scoreboard": {
+    "away": [2, 0, 0, 0, 0, 2, 0, 1, 3],
+    "home": [0, 0, 0, 0, 2, 0, 1, 0, 0]
+  },
+  "winningHit": "송찬의(6회 1사서 좌월 홈런)"
+},
 );

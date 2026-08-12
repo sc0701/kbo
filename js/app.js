@@ -117,6 +117,7 @@ document.addEventListener("keydown", (e) => {
 
 /* ---------------------------- 탭 네비게이션 ---------------------------- */
 const HEADER_DESC = {
+  predictView: "오늘의 팀 · 선발투수 매치업을 넣으면 확률 높은 결과부터 보여드려요.",
   leaderboardView: "KBO 팀들의 1무(1점차 이내) 승부 랭킹을 확인하세요.",
   detailView: "두 팀 간의 역대 전적 결과를 분석합니다.",
   closenessView: "이닝별 접전 유지력을 팀별로 비교합니다.",
@@ -539,8 +540,168 @@ function initTrendView() {
 }
 
 /* ============================================================
+   0. 오늘의 승부 예측
+   ============================================================ */
+const PREDICT_GAME_COUNT = 5;
+const ROOKIE_VALUE = "__ROOKIE__";
+
+function buildPredictGameCard(idx) {
+  return `
+    <div class="predict-game-card" data-idx="${idx}">
+        <div class="predict-game-num">경기 ${idx + 1}</div>
+        <div class="predict-matchup-grid">
+            <div class="predict-side">
+                <select class="predict-team" data-idx="${idx}" data-side="away"></select>
+                <select class="predict-starter" data-idx="${idx}" data-side="away" disabled></select>
+                <input type="text" class="predict-rookie-name" data-idx="${idx}" data-side="away" placeholder="선발투수 이름 (선택)" />
+            </div>
+            <div class="vs-badge">VS</div>
+            <div class="predict-side">
+                <select class="predict-team" data-idx="${idx}" data-side="home"></select>
+                <select class="predict-starter" data-idx="${idx}" data-side="home" disabled></select>
+                <input type="text" class="predict-rookie-name" data-idx="${idx}" data-side="home" placeholder="선발투수 이름 (선택)" />
+            </div>
+        </div>
+    </div>`;
+}
+
+function predictField(idx, side, cls) {
+  return document.querySelector(`.${cls}[data-idx="${idx}"][data-side="${side}"]`);
+}
+
+function refreshPredictStarters(idx, side) {
+  const teamSel = predictField(idx, side, "predict-team");
+  const starterSel = predictField(idx, side, "predict-starter");
+  const rookieInput = predictField(idx, side, "predict-rookie-name");
+  const team = teamSel.value;
+
+  rookieInput.style.display = "none";
+  rookieInput.value = "";
+
+  if (!team) {
+    starterSel.innerHTML = `<option value="">-</option>`;
+    starterSel.disabled = true;
+    return;
+  }
+  starterSel.disabled = false;
+  const starters = listStartersForTeam(team);
+  let html = `<option value="">선발투수 선택</option>`;
+  starters.forEach((s) => {
+    html += `<option value="${s.name}">${s.name} (${s.starts}경기)</option>`;
+  });
+  html += `<option value="${ROOKIE_VALUE}">🆕 신인 / 기록없는 선발</option>`;
+  starterSel.innerHTML = html;
+}
+
+function initPredictView() {
+  const container = document.getElementById("predictGames");
+  let html = "";
+  for (let i = 0; i < PREDICT_GAME_COUNT; i++) html += buildPredictGameCard(i);
+  container.innerHTML = html;
+
+  document.querySelectorAll(".predict-team").forEach((sel) => {
+    fillSelect(sel, TEAMS, { includeAll: true, allLabel: "이 경기 사용 안함" });
+    sel.value = "";
+    const idx = sel.dataset.idx;
+    const side = sel.dataset.side;
+    sel.addEventListener("change", () => refreshPredictStarters(idx, side));
+  });
+
+  document.querySelectorAll(".predict-starter").forEach((sel) => {
+    sel.addEventListener("change", () => {
+      const idx = sel.dataset.idx;
+      const side = sel.dataset.side;
+      const rookieInput = predictField(idx, side, "predict-rookie-name");
+      rookieInput.style.display = sel.value === ROOKIE_VALUE ? "block" : "none";
+      if (sel.value !== ROOKIE_VALUE) rookieInput.value = "";
+    });
+  });
+}
+
+function renderPredictionCard(idx, p, awayStarterLabel, homeStarterLabel) {
+  const outcomeRows = p.outcomes
+    .map((o, i) => {
+      const topCls = i === 0 ? "predict-outcome-top" : "";
+      return `
+        <div class="predict-outcome-row ${topCls}">
+            <div class="predict-outcome-label">${i === 0 ? "🥇 " : ""}${o.label}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${o.prob}%"></div></div>
+            <div class="predict-outcome-pct">${fmt1(o.prob)}%</div>
+        </div>`;
+    })
+    .join("");
+
+  const sourceNotes = p.sources
+    .map((s) => `<li><span class="predict-source-label">${s.label}</span><span class="predict-source-note">${s.note}</span></li>`)
+    .join("");
+
+  return `
+    <div class="predict-result-card">
+        <div class="predict-result-header">
+            <div class="predict-result-team">
+                <span class="t-name">${p.awayTeam}</span>
+                <span class="predict-result-pitcher">${awayStarterLabel || "선발 미정"}</span>
+            </div>
+            <span class="vs-badge">VS</span>
+            <div class="predict-result-team">
+                <span class="t-name">${p.homeTeam}</span>
+                <span class="predict-result-pitcher">${homeStarterLabel || "선발 미정"}</span>
+            </div>
+        </div>
+        <div class="predict-outcomes">${outcomeRows}</div>
+        <details class="predict-source-details">
+            <summary>분석 근거 보기</summary>
+            <ul class="predict-source-list">${sourceNotes}</ul>
+        </details>
+    </div>`;
+}
+
+function analyzeTodayGames() {
+  const resultsBox = document.getElementById("predictResults");
+  let html = "";
+  let anyGame = false;
+
+  for (let i = 0; i < PREDICT_GAME_COUNT; i++) {
+    const awayTeam = predictField(i, "away", "predict-team").value;
+    const homeTeam = predictField(i, "home", "predict-team").value;
+    if (!awayTeam || !homeTeam) continue;
+
+    if (awayTeam === homeTeam) {
+      html += `<div class="predict-result-card"><div class="no-data">경기 ${i + 1}: 같은 팀은 선택할 수 없습니다.</div></div>`;
+      anyGame = true;
+      continue;
+    }
+
+    const awayStarterSel = predictField(i, "away", "predict-starter");
+    const homeStarterSel = predictField(i, "home", "predict-starter");
+    let awayStarter = awayStarterSel.value;
+    let awayStarterLabel = awayStarter;
+    if (awayStarter === ROOKIE_VALUE) {
+      awayStarterLabel = predictField(i, "away", "predict-rookie-name").value.trim() || "신인/기록없음";
+      awayStarter = null;
+    }
+    let homeStarter = homeStarterSel.value;
+    let homeStarterLabel = homeStarter;
+    if (homeStarter === ROOKIE_VALUE) {
+      homeStarterLabel = predictField(i, "home", "predict-rookie-name").value.trim() || "신인/기록없음";
+      homeStarter = null;
+    }
+
+    anyGame = true;
+    const prediction = predictMatchup(awayTeam, homeTeam, awayStarter || null, homeStarter || null);
+    html += renderPredictionCard(i, prediction, awayStarterLabel, homeStarterLabel);
+  }
+
+  resultsBox.innerHTML = anyGame ? html : `<div class="no-data">분석할 경기를 1개 이상 선택해주세요.</div>`;
+  resultsBox.classList.remove("fade-in");
+  void resultsBox.offsetWidth;
+  resultsBox.classList.add("fade-in");
+}
+
+/* ============================================================
    초기화
    ============================================================ */
+initPredictView();
 renderLeaderboard();
 initClosenessView();
 initStarterView();
